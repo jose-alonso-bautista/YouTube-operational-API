@@ -1,17 +1,19 @@
-FROM php:apache
+FROM php:8.2-apache
 
+# Enable Apache URL rewriting (required for pretty URLs)
 RUN a2enmod rewrite
 
-# Copy application files into the container
+# Copy project files into Apache’s document root
 COPY . /var/www/html/
 
-# Replace `AllowOverride None` with `AllowOverride All` in `<Directory /var/www/>` in `/etc/apache2/apache2.conf`.
-RUN sed -ri -e 'N;N;N;s/(<Directory \/var\/www\/>\n)(.*\n)(.*)AllowOverride None/\1\2\3AllowOverride All/;p;d;' /etc/apache2/apache2.conf
+# Set working directory
+WORKDIR /var/www/html/
 
-COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
-RUN apt update
-RUN apt install -y git protobuf-compiler
-RUN composer require google/protobuf
-RUN protoc --php_out=proto/php/ --proto_path=proto/prototypes/ $(find proto/prototypes/ -type f)
+# Allow Apache to serve from port 8080 (required by Servalla)
+EXPOSE 8080
 
-CMD apachectl -D FOREGROUND
+# Replace default port 80 with 8080
+RUN sed -i 's/80/8080/g' /etc/apache2/ports.conf && \
+    sed -i 's/80/8080/g' /etc/apache2/sites-enabled/000-default.conf
+
+CMD ["apache2-foreground"]
