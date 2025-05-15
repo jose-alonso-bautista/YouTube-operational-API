@@ -1,3 +1,15 @@
+# Enable Rewrite Engine
 RewriteEngine On
+
+# Don't rewrite if the file actually exists
 RewriteCond %{REQUEST_FILENAME} !-f
+
+# Handle transcript video route
 RewriteRule ^transcript/video/([^/]+)$ /transcript.php [L,QSA]
+
+# Optional: Add CORS headers for API calls
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Origin, Content-Type, Accept, Authorization"
+</IfModule>
